@@ -1,6 +1,6 @@
 script_name('Search-Helper')
 script_author('Leo Romano & Carly_Barret')
-script_description('no desc')
+script_description('search')
 
 tag = '[Search-Helper]:'
 proekt = 'Всех РП Серверов'
