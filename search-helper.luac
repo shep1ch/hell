@@ -117,6 +117,6 @@ end
 function setSearchId(id)
     if tonumber(id) < 1000 or tonumber(id) > 0 then
         search_id = tonumber(id)
-        sampAddChatMessage(tag..' Нигадяй был записан.',  0x17e0e0)
+        sampAddChatMessage(tag..' Нигадяй был вписан.',  0x17e0e0)
     end
 end
