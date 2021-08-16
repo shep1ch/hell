@@ -1,0 +1,122 @@
+script_name('Search-Helper')
+script_author('Leo Romano & Carly_Barret')
+script_description('no desc')
+
+tag = '[Search-Helper]:'
+proekt = 'Всех РП Серверов'
+
+require "lib.moonloader" -- подключение библиотеки
+local dlstatus = require('moonloader').download_status
+local inicfg = require 'inicfg'
+search_id = 10001
+search_enabled = 0
+
+update_state = false
+
+local script_vers = 1
+local script_vers_text = "1.00"
+
+local update_url = "https://raw.githubusercontent.com/shep1ch/hell/main/update.ini"  -- тут тоже свою ссылку
+local update_path = getWorkingDirectory() .. "/update.ini"
+
+local script_url = "" -- тут свою ссылку
+local script_path = thisScript().path
+
+
+function main()
+    if not isSampLoaded() or not isSampfuncsLoaded() then return end
+    while not isSampAvailable() do wait(100) end
+    sampAddChatMessage('Скрипт '..tag..' для '..proekt..' был загружен.', 0x38ea8e)
+    sampAddChatMessage('Дабы открыть информационный диалог, введите - /ish',  0x38ea8e)
+    sampRegisterChatCommand('up', commandSwitch)
+    sampRegisterChatCommand('sd', setSearchId)
+	  sampRegisterChatCommand('testing', cmd_test)
+
+   downloadUrlToFile(update_url, update_path, function(id, status)
+        if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+            updateIni = inicfg.load(nil, update_path)
+            if tonumber(updateIni.info.vers) > script_vers then
+                sampAddChatMessage("Нашлось обновление! Версия: " .. updateIni.info.vers_text, -1)
+                update_state = true
+            end
+            os.remove(update_path)
+        end
+    end)
+    while true do wait(0)
+
+	if update_state then
+            downloadUrlToFile(script_url, script_path, function(id, status)
+                if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+                    sampAddChatMessage("Скрипт успешно обновлен!", -1)
+                    thisScript():reload()
+                end
+            end)
+            break
+        end
+
+        if search_enabled == 1 then
+            players = getAllChars()
+            for i in ipairs(players) do
+                local res, id = sampGetPlayerIdByCharHandle(players[i])
+                if res then
+                    if id == search_id then
+                        local name = sampGetPlayerNickname(id)
+                        local x, y, z = getCharCoordinates(players[i])
+                        local bs = raknetNewBitStream()
+                        raknetBitStreamWriteFloat(bs, x)
+                        raknetBitStreamWriteFloat(bs, y)
+                        raknetBitStreamWriteFloat(bs, z)
+                        raknetBitStreamWriteFloat(bs, 3.0)
+                        raknetEmulRpcReceiveBitStream(107, bs)
+                        raknetDeleteBitStream(bs)
+                        wait(2000)
+                    end
+                end
+            end
+        end
+    end
+end
+
+function cmd_test(arg)
+    sampAddChatMessage("da", -1)
+end
+
+function onReceiveRpc(id, bs)
+    if id == 138 then
+        local id = raknetBitStreamReadInt16(bs)
+        if id == search_id then
+            sampAddChatMessage(tag.. ' Нигадяй оффнулст, плак..',  0x17e0e0)
+            local bitStream = raknetNewBitStream()
+            raknetEmulRpcReceiveBitStream(37, bitStream)
+            raknetDeleteBitStream(bitStream)
+            search_id = 10001
+        end
+    elseif id == 55 then
+        local killerid = raknetBitStreamReadInt16(bs)
+        local idDeath = raknetBitStreamReadInt16(bs)
+        if idDeath == search_id then
+            sampAddChatMessage(tag.. ' Нигадяй умир, ф.', 0x17e0e0)
+            local bitStream = raknetNewBitStream()
+            raknetEmulRpcReceiveBitStream(37, bitStream)
+            raknetDeleteBitStream(bitStream)
+            search_id = 10001
+        end
+    end
+end
+
+function commandSwitch(command)
+    if command == '1' then search_enabled = 1 sampAddChatMessage(tag..' Метка обновляется. ', 0x17e0e0)
+    elseif command == '0' then
+        search_enabled = 0 sampAddChatMessage(tag..' Метка не обновляется.',  0x17e0e0)
+        local bs = raknetNewBitStream()
+        raknetEmulRpcReceiveBitStream(37, bs)
+        raknetDeleteBitStream(bs)
+    else sampAddChatMessage(tag.. ' 1 - search on, 0 - search off!', 0x17e0e0) end
+end
+
+function setSearchId(id)
+    if tonumber(id) < 1000 or tonumber(id) > 0 then
+        search_id = tonumber(id)
+        sampAddChatMessage(tag..' Нигадяй был записан.',  0x17e0e0)
+    end
+end
