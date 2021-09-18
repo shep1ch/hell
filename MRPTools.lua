@@ -60,7 +60,7 @@ function getPlate(id)
 	if plates[tonumber(id)] ~= nil then
 		return plates[tonumber(id)]
 	else
-		return "ГЌГҐГІ Г¤Г Г­Г­Г»Гµ"
+		return "ГЌГҐГІ Г¤Г Г­Г­Г»Гµ"
 	end
 end
 
