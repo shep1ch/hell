@@ -1,6 +1,6 @@
 script_name("Admin Tools")
 
-
+local script_version_str = "0.0.1"
 
 local tag = "{5301d8}[Admin Tools]{ffffff} : "
 local author = "{e80505}Shepi"
@@ -301,7 +301,7 @@ end
 
 function main()
     if not isSampLoaded() or not isSampfuncsLoaded() then return end
-	
+	autoupdate("https://raw.githubusercontent.com/shep1ch/hell/main/script_version.json", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/shep1ch/hell/main/MRPTools.lua")
 	  initializeRender()
 
     while not isSampAvailable() do wait(100) end
@@ -902,7 +902,7 @@ end
         imgui.SetNextWindowPos(imgui.ImVec2(1032, 344), imgui.Cond.FirstUseEver, imgui.ImVec2(0.5, 0.5))
         imgui.SetNextWindowSize(imgui.ImVec2(500, 250), imgui.Cond.FirstUseEver)
                 imgui.Begin(fa.ICON_USER_O .. u8" Информация о  обновлениях", obnova_window_state, imgui.WindowFlags.NoResize)
-				imgui.Text(u8"Да, нет но да")
+				imgui.Text(u8"Да")
 				imgui.End()
 				end
 				end
@@ -1251,3 +1251,4 @@ function RedTheme()
                     colors[clr.TextSelectedBg] = ImVec4(0.25, 1.00, 0.00, 0.43)
                     colors[clr.ModalWindowDarkening] = ImVec4(1.00, 0.98, 0.95, 0.73)
               end
+
