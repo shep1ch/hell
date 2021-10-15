@@ -183,7 +183,7 @@ local ips =
     ['Server'] = 's3.mordor-rp.ru:7777'
 }
 
-
+---------да
 
 function checkip()
   local ip, port = sampGetCurrentServerAddress()
