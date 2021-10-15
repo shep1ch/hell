@@ -39,7 +39,7 @@ function check_update() -- Создаём функцию которая буде
             updateIni = inicfg.load(nil, update_path)
             if tonumber(updateIni.info.vers) > script_vers then -- Сверяем версию в скрипте и в ini файле на github
                 sampAddChatMessage(tag .. " {FFFFFF}Имеется {32CD32}новая {FFFFFF}версия скрипта. Версия: {32CD32}"..updateIni.info.vers_text..". {FFFFFF}В скором времени обновление будет загружено.", 0xFF0000) -- Сообщаем о новой версии.
-				notify.addNotify("{5301d8}AdminTools", "Загружается обновление " .. updateIni.info.vers_text .. , "Ожидайте обновления", 2, 1, 1, 5)
+					notify.addNotify("{5301d8}AdminTools", "Загружается обновление ", "Ожидайте обновления", 2, 1, 1, 5)
                 update_found == true -- если обновление найдено, ставим переменной значение true
             end
             os.remove(update_path)
