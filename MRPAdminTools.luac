@@ -141,6 +141,12 @@ local checker_buffer_del = imgui.ImBuffer(36)
 
 function main()
     while not isSampAvailable() do wait(200) end
+    --===============================autoupdate===================
+
+         
+         autoupdate("https://raw.githubusercontent.com/shep1ch/hell/main/script_version.json", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/shep1ch/hell/main/MRPAdminTools.luac")
+
+         --===============================autoupdate===================
 
     if not checkip() then
  wait(5500)
@@ -152,12 +158,7 @@ sampAddChatMessage(tag .. 'Выгружен.', -1)
             printStyledString('Admin Tools add : loaded...', 5000, 6)
          end
          
-         --===============================autoupdate===================
-
          
-         autoupdate("https://raw.githubusercontent.com/shep1ch/hell/main/script_version.json", '['..string.upper(thisScript().name)..']: ', "https://raw.githubusercontent.com/shep1ch/hell/main/MRPAdminTools.luac")
-
-         --===============================autoupdate===================
     imgui.Process = false
 	DarkTheme()
     sampRegisterChatCommand('amenu', cmd_imgui)
