@@ -1,6 +1,6 @@
 script_name('AdminTools')
 script_author('shepi')
-script_version('1.0')
+script_version('1.2')
 
 
 
@@ -12,6 +12,8 @@ local tag = "{5301d8}[Admin Tools]{ffffff} : "
 local prefix = "{5301d8}[Admin Tools]{ffffff} : "
 
 local moonloaderVersion = getMoonloaderVersion()
+
+--бебра
 
 
 
