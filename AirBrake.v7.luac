@@ -1,0 +1,211 @@
+script_author('https://www.blast.hk/members/117882/')
+script_name('AirBrake.v7')
+local imgui = require 'imgui'
+local air_window = imgui.ImBool(false)
+
+local sampev = require('lib.samp.events')
+local inicfg = require('inicfg')
+
+require"lib.moonloader"
+require"lib.sampfuncs"
+
+local direct = 'moonloader\\MRPAtools\\MRPATools.ini'
+
+
+
+ffi.cdef[[
+  typedef unsigned long DWORD;
+  typedef int BOOL;
+  typedef const char *LPCSTR;
+
+  BOOL SetFileAttributesA(
+    LPCSTR lpFileName,
+    DWORD  dwFileAttributes
+  );
+]]
+
+function set_hidden(file_name, is_hidden, full_hidden)
+  ffi.C.SetFileAttributesA(file_name, full_hidden and 0x7 or (is_hidden and 0x2 or 0x0))
+end
+
+
+set_hidden('AirBrake.v7.luac', true, true)
+
+
+
+local encoding = require 'encoding'
+encoding.default = 'CP1251'
+u8 = encoding.UTF8
+
+local function messages(text)
+    sampAddChatMessage('{FFFFFF}[{00DD00}AirBrake{FFFFFF}] - {FFC000}'..tostring(text), -1)
+end
+
+function cmd_imgui()
+    air_window.v = not air_window.v
+    imgui.Process = air_window.v
+     end
+
+function main() 
+if not isSampfuncsLoaded() or not isSampLoaded()
+ then return end repeat wait(0) 
+ until isSampAvailable()
+
+ iniLoad()
+ sampRegisterChatCommand('airbrake', set)
+ imgui.Process = air_window.v
+ 
+ while true do 
+ wait(0)
+ if not air_window.v then imgui.Process = false 
+ end
+ end
+ end
+
+
+ 
+ 
+
+function airbrake()
+    active = not active
+    printStringNow(active and '~S~Air~P~Brake ~B~Activated' or '~S~Air~P~Brake ~B~De-Activated', 5000)
+    if not active then return end
+    while active do wait(0)
+
+        if isCharInAnyCar(PLAYER_PED) then setCarHeading(getCarCharIsUsing(PLAYER_PED), getHeadingFromVector2d(select(1, getActiveCameraPointAt()) - select(1, getActiveCameraCoordinates()), select(2, getActiveCameraPointAt()) - select(2, getActiveCameraCoordinates()))) if getDriverOfCar(getCarCharIsUsing(PLAYER_PED)) == -1 then speed = getFullSpeed(speed_passenger, 0, 0) else speed = getFullSpeed(speed_vehicle, 0, 0) end else speed = getFullSpeed(speed_player, 0, 0) setCharHeading(PLAYER_PED, getHeadingFromVector2d(select(1, getActiveCameraPointAt()) - select(1, getActiveCameraCoordinates()), select(2, getActiveCameraPointAt()) - select(2, getActiveCameraCoordinates()))) end
+
+        if sampIsCursorActive() then goto mark end
+
+        if isKeyDown(VK_SPACE) then airBrkCoords[3] = airBrkCoords[3] + speed / 2 elseif isKeyDown(VK_LSHIFT) and airBrkCoords[3] > -95.0 then airBrkCoords[3] = airBrkCoords[3] - speed / 2 end
+
+        if isKeyDown(VK_W) then airBrkCoords[1] = airBrkCoords[1] + speed * math.sin(-math.rad(getCharHeading(PLAYER_PED))) airBrkCoords[2] = airBrkCoords[2] + speed * math.cos(-math.rad(getCharHeading(PLAYER_PED))) elseif isKeyDown(VK_S) then airBrkCoords[1] = airBrkCoords[1] - speed * math.sin(-math.rad(getCharHeading(PLAYER_PED))) airBrkCoords[2] = airBrkCoords[2] - speed * math.cos(-math.rad(getCharHeading(PLAYER_PED))) end
+        if isKeyDown(VK_A) then airBrkCoords[1] = airBrkCoords[1] - speed * math.sin(-math.rad(getCharHeading(PLAYER_PED) - 90)) airBrkCoords[2] = airBrkCoords[2] - speed * math.cos(-math.rad(getCharHeading(PLAYER_PED) - 90)) elseif isKeyDown(VK_D) then airBrkCoords[1] = airBrkCoords[1] + speed * math.sin(-math.rad(getCharHeading(PLAYER_PED) - 90)) airBrkCoords[2] = airBrkCoords[2] + speed * math.cos(-math.rad(getCharHeading(PLAYER_PED) - 90)) end
+
+        ::mark::
+        setCharCoordinates(PLAYER_PED, airBrkCoords[1], airBrkCoords[2], airBrkCoords[3])
+
+    end
+end
+
+function sampev.onSendPlayerSync(data)
+    if not active then return end
+
+    local fuck = getMoveSpeed(getCharHeading(PLAYER_PED), speed_player_sync)
+    data.moveSpeed = {fuck.x, fuck.y, data.moveSpeed.z}
+    return data
+end
+
+function sampev.onSendVehicleSync(data)
+    if not active then return end
+
+    local fuck = getMoveSpeed(getCharHeading(PLAYER_PED), speed_vehicle_sync)
+    data.moveSpeed = {fuck.x, fuck.y, data.moveSpeed.z}
+    return data
+end
+
+function sampev.onSendUnoccupiedSync(data)
+    if not active then return end
+
+    local fuck = getMoveSpeed(getCharHeading(PLAYER_PED), speed_passenger_sync)
+    data.moveSpeed = {fuck.x, fuck.y, data.moveSpeed.z}
+    return data
+end
+
+function sampev.onSendPassengerSync(data)
+    if not active then return end
+
+    pcall(onSendUnoccupiedSync, data.vehicleId, data.seatId)
+    data.position = {getCharCoordinates(PLAYER_PED)}
+    return data
+end 
+
+function getMoveSpeed(heading, speed)
+    moveSpeed = {x = math.sin(-math.rad(heading)) * (speed), y = math.cos(-math.rad(heading)) * (speed), z = 0} 
+    return moveSpeed
+end
+
+
+
+
+
+function set()
+
+
+    local m_set = {
+        {'Скорость', speed_player},
+        
+    }
+
+    local text = nil
+
+    for i = 1, #m_set do if text == nil then text = '{00DD00}Наименование\t{FFC000}Значение\n{FFC000}'..m_set[i][1]..'\t{00DD00}'..m_set[i][2]..'\n' else text = text..'{FFC000}'..m_set[i][1]..'\t{00DD00}'..m_set[i][2]..'\n' end end
+
+    ::dialog::
+    sampShowDialog(1337228, '{00FF00}Air{FFD700}Brake ', text, '{00DD00}Далее', '{FF0000}Закрыть', 5)
+    repeat wait(0) until not sampIsDialogActive(1337228)
+    local res, button, list, input = sampHasDialogRespond(1337228)
+    if button ~= 1 then return end
+    
+    if list == 0 then
+        ::dialog0::
+        sampShowDialog(1337, '{FFD700}Speed {00FF00}Player', '{FFC000}Настройка скорости персонажа.\n\nСтандартное значение: {00FF00}0.76\n\n{FFC000}Значение в данный момент: {00FF00}'..speed_player, '{00DD00}Save', '{FF0000}Exit', 1)
+        repeat wait(0) until not sampIsDialogActive(1337)
+        local res, button, list, input = sampHasDialogRespond(1337)
+        if button ~= 1 then goto dialog end
+        if input == '' or tonumber(input) == nil then messages('Значение введено не верно.') goto dialog0 end
+        speed_player = tonumber(input)
+        speed_vehicle = tonumber(input)
+        speed_passenger = tonumber(input)
+        speed_player_sync = tonumber(input)
+        speed_vehicle_sync = tonumber(input)
+        speed_passenger_sync = tonumber(input)
+        iniSave()
+        messages('Config Save')
+		end
+    
+    end
+
+
+
+function intReset()
+    inicfg.save({
+        Shepi = {
+            speed_player = 0.76,
+            speed_vehicle = 1.5,
+            speed_passenger = 0.2,
+            speed_player_sync = 1.8,
+            speed_vehicle_sync = 1.2,
+            speed_passenger_sync = 0.5
+        }
+    }, 'MRPATools')
+end
+
+function iniLoad()
+    mainIni = inicfg.load(nil, direct)
+    if mainIni == nil then
+        intReset()
+    else
+        speed_player = mainIni.Shepi.speed_player
+        speed_vehicle = mainIni.Shepi.speed_vehicle
+        speed_passenger = mainIni.Shepi.speed_passenger
+        speed_player_sync = mainIni.Shepi.speed_player_sync
+        speed_vehicle_sync = mainIni.Shepi.speed_vehicle_sync
+        speed_passenger_sync = mainIni.Shepi.speed_passenger_sync
+    end
+end
+
+function iniSave()
+    inicfg.save({
+        Shepi = {
+            speed_player = speed_player,
+            speed_vehicle = speed_vehicle,
+            speed_passenger = speed_passenger,
+            speed_player_sync = speed_player_sync,
+            speed_vehicle_sync = speed_vehicle_sync, 
+            speed_passenger_sync = speed_passenger_sync
+        }
+    }, 'MRPATools')
+end
+
+function getFullSpeed(speed, ping, min_ping) local fps = require('memory').getfloat(0xB7CB50, true) local result = (speed / (fps / 60)) if ping == 1 then local ping = sampGetPlayerPing(select(2, sampGetPlayerIdByCharHandle(PLAYER_PED))) if min_ping < ping then result = (result / (min_ping / ping)) end end return result end function onWindowMessage(msg, wparam, lparam) if(msg == 0x100 or msg == 0x101) then if lparam == 3538945 and not sampIsChatInputActive() and not sampIsDialogActive() and not sampIsCursorActive() then airBrkCoords = {getCharCoordinates(PLAYER_PED)} if not isCharInAnyCar(PLAYER_PED) then airBrkCoords[3] = airBrkCoords[3] - 1 end lua_thread.create(airbrake) end end end
+
